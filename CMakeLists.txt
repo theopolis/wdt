@@ -46,7 +46,10 @@ set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
 # So hardcoding for now:
 #set(CMAKE_BUILD_TYPE Debug)
 set(CMAKE_BUILD_TYPE Release)
-set(CMAKE_CXX_FLAGS "-msse4.2 -mpclmul")
+if(BUILD_FUZZER)
+  set(CXX_FUZZ_FLAGS "-fsanitize=address")
+endif(BUILD_FUZZER)
+set(CMAKE_CXX_FLAGS "-msse4.2 -mpclmul ${CXX_FUZZ_FLAGS}")
 #set(CMAKE_CXX_FLAGS "-msse4.2 -mpclmul -Wextra -Wsign-compare -Wunused-variable")
 #set(CMAKE_CXX_FLAGS "-msse4.2 -mpclmul -Wextra -Wsign-compare -Wunused-variable -Wconversion -Wsign-conversion")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "_bin/wdt")
@@ -246,6 +249,17 @@ install(PROGRAMS test/wcp.sh DESTINATION bin RENAME wcp)
 
 
 ### Everything below is about testing (and not required to create wdt/wdt)
+
+if (BUILD_FUZZER)
+  add_executable(wdt_fuzz
+    test/WdtFuzz.cpp
+  )
+
+  target_link_libraries(wdt_fuzz
+    "-fsanitize=fuzzer"
+    wdt_min
+  )
+endif (BUILD_FUZZER)
 
 if (BUILD_TESTING)
 
